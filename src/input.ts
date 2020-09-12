@@ -1,4 +1,4 @@
-enum InputType {
+export enum InputType {
     KeyDown,
     KeyUp,
     MouseDown,
@@ -7,15 +7,17 @@ enum InputType {
     MouseWheel,
     MouseClick
 }
-interface Input {
+
+export interface Input {
     t: InputType;
     d: any;
 }
+
 class EventInput implements Input {
     constructor(public t: InputType, public d: UIEvent) { }
 }
 
-class InputListener {
+export class InputListener {
     doc: Document | undefined;
     inputs: Array<Input>;
     constructor() {
@@ -90,6 +92,4 @@ class InputListener {
         }
         return d;
     }
-
 }
-export { Input, InputListener, InputType }

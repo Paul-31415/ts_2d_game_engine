@@ -1,18 +1,16 @@
-//
 import * as PIXI from "pixi.js";
 import { Gamestate } from "./game";
 
+const ROOT_ZERO = (() => {
+    let rz = 1;
+    while (rz * rz != 0) {
+        rz /= 2;
+    }
+    return rz
+})();
 
 
-
-
-
-
-
-
-
-
-interface Physical {
+export interface Physical {
     step: (g: Gamestate) => void;
 }
 
@@ -29,40 +27,27 @@ class Ballistic implements Physical {
         this.pos.increment(this.vel);
         this.vel.increment(this.acc);
     }
-
 }
 
-
-type Pointy = {
+export type Pointy = {
     x: number;
     y: number;
 }
 
-
-var rz = 1;
-while (rz * rz != 0) {
-    rz /= 2;
-}
-
-
-const ROOT_ZERO = rz;
-
-
-function pseudoCosine(n: number) {
+export function pseudoCosine(n: number) {
     n = (((n % 4) + 4) % 4) - 2;
     return Math.abs(n) - 1;
 }
-function pseudoSine(n: number) {
+
+export function pseudoSine(n: number) {
     return pseudoCosine(n - 1);
 }
 
-function mod(a: number, b: number) {
+export function mod(a: number, b: number) {
     return ((a % b) + b) % b;
 }
 
 export function vecify(p: Pointy) { return new Vec(p.x, p.y); }
-
-
 
 export function vec_iir(a: number[], b0: number, b: number[], state: Pointy[], inp: Vec) {
     const s = inp.copy();
@@ -79,8 +64,7 @@ export function vec_iir(a: number[], b0: number, b: number[], state: Pointy[], i
     return r;
 }
 
-
-class Vec extends PIXI.Point {
+export class Vec extends PIXI.Point {
     constructor(x: number | undefined = undefined, y: number | undefined = undefined) { super(x, y); }
     clone() {
         return new Vec(this.x, this.y);
@@ -105,7 +89,6 @@ class Vec extends PIXI.Point {
     }
     get mag(): number {
         return Math.hypot(this.x, this.y);
-        //return Math.sqrt(this.mag2);
     }
     set mag(n: number) {
         this.normalize(n);
@@ -174,31 +157,6 @@ class Vec extends PIXI.Point {
         this.x *= f;
         this.y *= f;
         return this;
-		/*
-        const mag2 = this.dot(this);
-        if (mag2 == 0) {
-            return this.scale(1 / ROOT_ZERO).normalize(m);
-        }
-        if (mag2 == Infinity) {
-            if (Math.abs(this.x) == Infinity) {
-                if (Math.abs(this.y) == Infinity) {
-                    this.x = Math.sign(this.x);
-                    this.y = Math.sign(this.y);
-                    return this.normalize(m);
-                }
-                this.y = 0;
-                this.x = Math.sign(this.x) * m;
-                return this;
-            }
-            if (Math.abs(this.y) == Infinity) {
-                this.x = 0;
-                this.y = Math.sign(this.y) * m;
-                return this;
-            }
-            return this.scale(ROOT_ZERO).normalize(m);
-        }
-        return this.scale(m / Math.sqrt(mag2));
-		*/
     }
     normalized(m = 1) {
         return this.clone().normalize(m);
@@ -236,7 +194,6 @@ class Vec extends PIXI.Point {
     chs() {
         return new Vec(-this.x, -this.y);
     }
-    //negative() { return this.chs(); }
     negate() {
         this.x = -this.x; this.y = -this.y;
         return this;
@@ -300,7 +257,6 @@ class Vec extends PIXI.Point {
     ceil() {
         return new Vec(Math.ceil(this.x), Math.ceil(this.y));
     }
-
     gt(o: Pointy) {
         return this.x > o.x && this.y > o.y;
     }
@@ -310,7 +266,6 @@ class Vec extends PIXI.Point {
     between(lo: Pointy, hi: Pointy) {
         return this.gt(lo) && this.lt(hi);
     }
-
     vmod(o: Pointy) {
         return this.func(mod, o);
     }
@@ -356,7 +311,7 @@ class Vec extends PIXI.Point {
 
 }
 
-class Line {
+export class Line {
     constructor(public a: Vec, public b: Vec) { }
 
     get d(): Vec {
@@ -430,24 +385,8 @@ class Line {
     chs() {
         return new Line(this.a.chs(), this.b.chs());
     }
-    //negative() { return this.chs(); }
     negate() {
         this.a.negate(); this.b.negate();
         return this;
     }
-
-
-}
-
-//class PhysicalLine
-
-
-
-
-
-
-export {
-    Physical,
-    Vec, mod, pseudoSine, pseudoCosine, Line,
-    Pointy,
 }
