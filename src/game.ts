@@ -1,6 +1,8 @@
 import { toggleTile } from "./browser";
+import { ColPoint, PolyCol, StaticLine } from "./collision_detection";
 import { InputListener, InputType } from "./input";
-import { Pointy, Vec } from "./physics";
+import { Line, Pointy, Vec } from "./physics";
+import { thickLine } from "./rasterIters";
 import { Sprite } from "./sprite";
 import { World } from "./world";
 
@@ -23,12 +25,46 @@ function tileAt(v: Vec, s: Gamestate) {
 }
 
 export function step(state: Gamestate) {
-    state.player.pos.increment(state.player.vel);
-    state.player.vel.increment(new Vec(0, 0.01));
-    if (tileAt(state.player.pos, state)) {
-        state.player.vel.scale(0);
-    }
+    updatePlayer(state.player, state);
 }
+const tileCollider = new PolyCol([new StaticLine(new Vec(1, 1), new Vec(1, 0)),
+new StaticLine(new Vec(1, 0), new Vec(0, 0)),
+new StaticLine(new Vec(0, 0), new Vec(0, 1)),
+new StaticLine(new Vec(0, 1), new Vec(1, 1))]);
+function updatePlayer(player: Ptype, state: Gamestate) {
+    const gravity = new Vec(0, .01);
+    const nextPos = player.pos.plus(player.vel);
+    let hit = false;
+    let mint = 1;
+    for (let t of thickLine(player.pos, nextPos)) {
+        if (tileAt(t.i, state)) {
+            const cp = new ColPoint(player.pos.minus(t.i), nextPos.minus(t.i));
+            for (let col of cp.collide(tileCollider)) {
+                if (col.t >= 0 && col.t < mint) {
+                    hit = true;
+                    mint = col.t;
+                }
+            }
+            if (hit)
+                break;
+            //mint = new Line(player.pos, nextPos).uv(t.p).y * 1;
+            nextPos.setFrom(t.p);
+            mint = .99;
+            if (t.p.x % 1 == 0)
+                player.vel.x *= -.875;
+            if (t.p.y % 1 == 0)
+                player.vel.y *= -.875;
+            hit = true;
+            break;
+        }
+    }
+    player.pos.lerpEq(nextPos, mint);
+    if (!hit)
+        player.vel.increment(gravity);
+
+
+}
+
 
 export function applyInputs(state: Gamestate, inputs: InputListener) {
     for (let inp of inputs.inputs) {
@@ -54,8 +90,8 @@ export function applyInputs(state: Gamestate, inputs: InputListener) {
 
         if (inp.t == InputType.MouseClick) {
             const me = (inp.d as MouseEvent);
-            const pos = new Vec(me.offsetX, me.offsetY);
-            toggleTile(pos);
+            const pos = new Vec(me.pageX, me.pageY);
+            toggleTile(pos, state);
         }
     }
 

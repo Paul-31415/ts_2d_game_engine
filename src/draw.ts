@@ -1,7 +1,7 @@
 import { Gamestate } from "./game";
 import * as PIXI from "pixi.js";
 import { Vec, Pointy, vec_iir } from "./physics";
-import { thickRect } from "./rasterIters";
+import { thickLine, thickRect } from "./rasterIters";
 
 
 export class Draw {
@@ -50,6 +50,26 @@ export class Draw {
         this.graphics.lineStyle(3, 0x0088ff);
         const c = this.camMap(g.player.pos, camCenter);
         this.graphics.drawCircle(c.x, c.y, this.s / 2);
+
+        //debug draws
+        this.graphics.lineStyle(1, 0x0088ff);
+        this.graphics.moveTo(c.x, c.y);
+        const np = this.camMap(g.player.pos.plus(g.player.vel), camCenter);
+        this.graphics.lineTo(np.x, np.y);
+
+        const colors = [0xff0000, 0xff8800, 0xffff00, 0x00ff00, 0x0000ff, 0x8800ff];
+        let b = 0;
+        for (let t of thickLine(g.player.pos, g.player.pos.plus(g.player.vel))) {
+            this.graphics.lineStyle(1, colors[b % colors.length]);
+            const cp = this.camMap(t.p, camCenter);
+            this.graphics.drawCircle(cp.x, cp.y, this.s / 8);
+            const tp = this.camMap(t.i, camCenter);
+            this.drawBox(tp.x, tp.y, this.s, this.s, true);
+            b += 1;
+            if (b == 10)
+                b;
+        }
+
     }
 
     camMap(v: Vec, c: Pointy) {

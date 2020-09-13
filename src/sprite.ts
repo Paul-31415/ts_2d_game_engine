@@ -1,3 +1,4 @@
+import { Collideable } from "./collision_detection";
 import { Vec } from "./physics";
 
 
@@ -6,4 +7,10 @@ export type Sprite = {
     graphicsID: number,
 }
 
+
+
+export type PSprite = Sprite & {
+    vel: Vec,
+    collider: Collideable,
+}
 

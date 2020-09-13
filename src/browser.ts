@@ -50,12 +50,12 @@ app.stage.addChild(disp.container);
 
 const inputs = new InputListener();
 
-export function toggleTile(v: Vec) {
+export function toggleTile(v: Vec, state: Gamestate) {
     const t = disp.camMapInv(v, state.cam.pos).floor();
     const r = state.world.tileMap.tiles[t.y];
     if (r != undefined)
-        if (state.world.tileMap.tiles[t.y][t.x] != undefined)
-            state.world.tileMap.tiles[t.y][t.x] = state.world.tileMap.tiles[t.y][t.x] ? 0 : 1;
+        if (r[t.x] != undefined)
+            r[t.x] = (r[t.x] != 0 ? 0 : 1);
 }
 
 function update(_delta: number) {
